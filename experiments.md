@@ -1,36 +1,44 @@
-## Experiments setup
+# Experiments setup
 
 This step outlines the experimental design and organization for the development of [Nexus](https://github.com/fialhocoelho/Nexus/) model: a forecasting model using foundation models,
 proposing a knowledge distillation approach to achieve robust forecasts. The experiments aim to explore various aspects of model training, tuning, and inference to optimize the forecasting performance.
 This section explains the selection of teacher models, student models, calibration strategies, and which baseline models will be used to compare a generated forecast data.
 It also addresses key issues to be resolved before the experimentation process starts, including data selection, handling missing values, and the incorporation of exogenous variables related to Santos oceanic variables.
 
-### Table of Contents
-1. [Models](#models)
-2. [Issues to be Addressed](#issues-to-be-addressed)
-3. [Variables](#variables)
-4. [Granularity](#granularity)
-5. [Inference Window](#inference-window)
-6. [Experiment Organization](#experiment-organization)
-7. [Proposed Initial Model Diagram](#proposed-initial-model-diagram)
-8. [First Stage of Experiments (Teacher models)](#first-stage-of-experiments-teacher-models)
-9. [First Stage of Experiments (Student Model)](#first-stage-of-experiments-student-model-tbd)
-10. [First Stage of Experiments (Baseline)](#first-stage-of-experiments-baseline)
+## Table of Contents
+
+- [Models](#models)
+  - [Teacher models](#teacher-models)
+  - [Student model](#student-model)
+  - [Calibration model](#calibration-model)
+- [Baseline models](#baseline-models)
+- [Issues to be Addressed](#issues-to-be-addressed)
+- [Variables](#variables)
+  - [Endogenous](#endogenous)
+  - [Exogenous](#exogenous)
+- [Granularity](#granularity)
+- [Inference Window](#inference-window)
+- [Experiment Organization](#experiment-organization)
+- [Proposed Initial Model Diagram](#proposed-initial-model-diagram)
+- [Tables](#tables)
+  - [1st Stage of Experiments (Teacher models)](#1st-stage-of-experiments-teacher-models)
+  - [2nd Stage of Experiments (Student Model)](#2nd-stage-of-experiments-student-model)
+  - [3rd Stage of Experiments (Baseline)](#3rd-stage-of-experiments-baseline)
 
 ### Models
 #### Teacher models 
-* TimeGPT (Foundation Model used for PoC)
-* Chronos (Foundation Model)
-* lag-llama (Foundation Model)
+* [TimeGPT](https://arxiv.org/abs/2310.03589) (Foundation Model used for PoC)
+* [Chronos](https://arxiv.org/html/2403.07815v1) (Foundation Model)
+* [lag-llama](https://arxiv.org/abs/2310.08278) (Foundation Model)
 #### Student model
 * MLP (Standard ML baseline Model)
 * TBD
 #### Calibration model
 * TBD
 ### Baseline models
-* NHITS (State-Of-Art model for timeseries prediction using ML)
+* [NHITS](https://arxiv.org/abs/2201.12886) (State-Of-Art model for timeseries prediction using ML)
 * GNN OMAE (Graph Model)
-* TFT 
+* [TFT](https://arxiv.org/abs/1912.09363) (SoA for Multi-horizon Time Series Forecasting)
 * SARIMAX (ARIMA-like model for Seasonal univariate + exog)
 
 ### Issues to be Addressed:
@@ -83,9 +91,11 @@ The experiments will be divided into 5 stages with objectives:
 
 ### Proposed Initial Model Diagram
 The diagram below exemplifies an initial sketch of the proposed model with the aim of understanding the purpose of each element. 
-[diagram]
 
-### Table: First Stage of Experiments (Teacher models)
+![nexus-diagram](images/nexus_diagram.png)
+
+### Tables
+#### 1st Stage of Experiments (Teacher models)
 
 | Models    | Mode               | Exec Env      | Regions    | Endog Vars    | Exog Vars | #Fine-Tuning steps | #Epochs |
 |-----------|--------------------|---------------|------------|---------------|-----------|--------------------|---------|
@@ -94,14 +104,14 @@ The diagram below exemplifies an initial sketch of the proposed model with the a
 | lag-llama | Multivariate       | Xeon + TitanV | Praticagem | curr, ssh, at | at        | 100 (optuna)       | 200     |
 
 
-### Table: First Stage of Experiments (Student Model) TBD
+#### 2nd Stage of Experiments (Student Model) TBD
 
 | Models    | Mode         | Exec Env      | Endog Vars                                 | Exog Vars | #Fine-Tuning steps | #Epochs |
 |-----------|--------------|---------------|--------------------------------------------|-----------|--------------------|---------|
 | TBD       | Multivariate | Xeon + TitanV | curr, ssh, at, TimeGPT, Chronos, lag-llama | TBD       | 100 (optuna)       | 200     |
 
 
-### Table: First Stage of Experiments (Baseline)
+#### 3rd Stage of Experiments (Baseline)
 
 | Models    | Mode               | Exec Env      | Regions    | Endog Vars    | Exog Vars | #Fine-Tuning steps | #Epochs |
 |-----------|--------------------|---------------|------------|---------------|-----------|--------------------|---------|
