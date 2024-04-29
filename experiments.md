@@ -37,15 +37,15 @@ It also addresses key issues to be resolved before the experimentation process s
 * Should we use data only from Praticagem or also from other regions? 
 * Some models do not accept missing data, and some series have missing data. Should we use interpolation or zero filling techniques?
 * Should we use SOFS or other data from numerical simulations as endo/exogenous variables for input to the models?
-    * Problem: Granularity of 3h. To deal with this in models that do not support series with different granularities, we would have to:
+    * **Problem:** Granularity of 3h. To deal with this in models that do not support series with different granularities, we would have to:
         * Interpolate to have measurements with a granularity of 1h or
         * Decide to run the models with a granularity of 3h to be able to use the SOFS as a baseline.
-* The most used foundation models today (the first 3 mentioned in the models list) are not references in performance for long-term prediction, as they are specialized in short-term prediction, given the nature of the diversity of the data used to train the models. In the TimeGPT paper, they mention empirically considering that long-term predictions are those with more than 24 points.
-    * Problem: If we deal with granularity less than 1h, to predict a day in the future, we would need predictions greater than 24 points. Of the mentioned foundation model implementations, only TimeGPT presents an approach that uses pre-trained weights for long-term prediction, but they mention that this model is still incipient and was trained with a lower variety of data compared to the model for short-term prediction (<=24 prediction points).
+* Actually, the most used foundation models are not the best choice for a good performance for long-term prediction, as they are specialized in short-term prediction, given the nature of the diversity of the data used to train the models. In the TimeGPT paper, they mention empirically considering that long-term predictions are those with more than 24 points.
+    * **Problem:** If we deal with granularity less than 1h, to predict a day in the future, we would need predictions greater than 24 points. Of the mentioned foundation model implementations, only TimeGPT presents an approach that uses pre-trained weights for long-term prediction, but they mention that this model is still incipient and was trained with a lower variety of data compared to the model for short-term prediction (<=24 prediction points).
 * Should we use estimates of carbon production for training/inference of the models?
-    * Problem: Learning curve x time for project delivery.
+    * **Problem:** Learning curve x time for project delivery.
 * Should we use other variables from satellites/images?
-    * Problem: The foundation models chosen by definition do not work with encoded data. It would be necessary to alter the model to handle this data. In this case, the challenge would be to retrain them with this data domain. These models use weights already calculated from other GenAI-based SoA models (e.g., T5, Llama, etc.).
+    * **Problem:** The foundation models chosen, by definition, do not work with encoded data. It would be necessary to alter the model to handle this data. In this case, the challenge would be to retrain them with this data domain. These models use weights already calculated from other GenAI-based SoA models (e.g., T5, Llama, etc.).
 
 ### Variables
 #### Endogenous
@@ -56,7 +56,7 @@ It also addresses key issues to be resolved before the experimentation process s
 * Astronomical tide: Praticagem and other regions
 
 ### Granularity
-I believe the ideal granularity for our testing scenario would be with a periodicity of 1 hour. 
+I believe the ideal granularity for our testing scenario would be a periodicity of 1 hour, due to the limitation of foundation models in handling long-term predictions.
 
 ### Inference Window
 As it involves zero-shot learning strategies, I believe we can investigate an optimal window that correlates the size of the window with the computational cost/tokens used for training/inference. For proof of concept inference using TimeGPT, an incremental windowing strategy was used with padding = 1, where it consists of N predictions, where N is the number of measurement points in the test series. For elucidation:
