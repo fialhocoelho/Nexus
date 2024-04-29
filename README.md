@@ -1,8 +1,9 @@
+![nexus-logo](images/nexus_logo.png)
+
 # Nexus
-Where Converging Foundation Models and Knowledge Distillation Promote Robust Time Series Forecasting
 
 ### About Nexus model:
-TBD
+Where Converging Foundation Models and Knowledge Distillation Promote Robust Time Series Forecasting
 
-## Experiment setup:
+### Experiment setup:
 [Experiment details](experiments.md)
