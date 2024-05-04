@@ -92,7 +92,7 @@ The experiments will be divided into 5 stages with objectives:
 ### Proposed Initial Model Diagram
 The diagram below exemplifies an initial sketch of the proposed model with the aim of understanding the purpose of each element. 
 
-![nexus-diagram](images/nexus_windowing.png)
+![nexus-diagram](images/nexus_windowing_h.png)
 
 ### Tables
 #### 1st Stage of Experiments (Teacher models)
