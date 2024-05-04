@@ -4,7 +4,21 @@ This Proof of Concept aims to validate if a foundation model can achieve similar
 
 ## Table of Contents
 
-TBD
+- [PoC: Foundation Models for Time Series Forecasting](#poc-foundation-models-for-time-series-forecasting)
+  - [Table of Contents](#table-of-contents)
+  - [Data](#data)
+    - [Chosen Data for experiments](#chosen-data-for-experiments)
+    - [The dataset](#the-dataset)
+    - [Splitting the Dataset](#splitting-the-dataset)
+    - [Granularity](#granularity)
+  - [Chosen Model: Nixtla TimeGPT](#chosen-model-nixtla-timegpt)
+  - [Experiments](#experiments)
+    - [Inference Window](#inference-window)
+    - [Baseline](#baseline)
+    - [Metrics](#metrics)
+  - [Results](#results)
+    - [Predicted Range](#predicted-range)
+  - [Conclusion](#conclusion)
 
 ## Data
 
@@ -32,8 +46,8 @@ Foundation models rely on their ability to generalize across different areas, es
 
 ### Inference Window
 
-In the paper [3], a large inference windows (larger than 5k measured ponts) cannot be setted due computer resources limitation. The paper above uses 20 months of data to train the models and ad inference window with 168 measured points (7 days) to forecast the next 24 hours using sliding windowing as we can se at the [figure 1](#fig1). 
-For the experiment we used Nixtla TimeGPT API to send data using increamental windowing to forecast the next 24 measured points ([figure 1](#fig1)). The incremental window was choosen to check de performance of related model infering a large data to be infered. 
+In the paper [3], a large inference windows (larger than 5k measured points) cannot be set due to computer resources limitations. The paper above uses 20 months of data to train the models and an inference window with 168 measured points (7 days) to forecast the next 24 hours using sliding windowing as we can see in [figure 1](#fig1). 
+For the experiment, we used Nixtla TimeGPT API to send data using incremental windowing to forecast the next 24 measured points ([figure 1](#fig1)). The incremental window was chosen to check the performance of the related model inferring a large data to be inferred. 
 
 Given it involves zero-shot learning strategies, we propose investigating an optimal window that correlates window size with computational cost/tokens used for training/inference. **For this proof of concept inference using TimeGPT, we employed an incremental windowing strategy with padding = 1.** Here's how it works:
 
@@ -61,7 +75,7 @@ Given it involves zero-shot learning strategies, we propose investigating an opt
 
 ### Baseline
 
-To measure the experiment results we will use the paper [3] as baseline.
+To measure the experiment results, we will use the paper [3] as a baseline.
 
 ### Metrics
 
