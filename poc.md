@@ -1,4 +1,4 @@
-# Proof of Concept (PoC): Foundation Models for Time Series Forecasting 
+# PoC: Foundation Models for Time Series Forecasting 
 
 This Proof of Concept aims to validate if a foundation model can achieve similar results when compared with state-of-the-art time series forecasting techniques.
 
@@ -57,11 +57,29 @@ Given it involves zero-shot learning strategies, we propose investigating an opt
 <p id='fig1'></p>
 
 ![nexus-diagram](images/nexus_windowing_h.png)
-<center><h3>Figure 1: Types of Windowing</h3></center>
+<center><h4>Figure 1: Types of Windowing</h4></center>
 
 ### Baseline
 
-To measure the experiment results we will use the paper [3] as baseline using Index of Agreement (IoA) and RMSE comparison metrics. 
+To measure the experiment results we will use the paper [3] as baseline.
+
+### Metrics
+
+For all experiments, presented results using Index of Agreement (IoA)[4] comparison metrics.
+
+The Index of Agreement ($IoA$) is calculated using the formula:
+
+$$
+IoA = 1 - \frac{\sum_{i=1}^{n} (O_i - P_i)^2}{\sum_{i=1}^{n} (|P_i - \overline{O}| + |O_i - \overline{O}|)^2}
+$$
+
+where:
+- $O_i$ represents the observed values,
+- $P_i$ represents the predicted values,
+- $\overline{O}$ is the mean of the observed values, and
+- $n$ is the number of observations.
+
+This formula assesses the agreement between observed and predicted values. A value of 1 indicates perfect agreement, while lower values indicate less agreement.
 
 ## Results
 
