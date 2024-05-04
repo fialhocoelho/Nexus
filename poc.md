@@ -1,125 +1,77 @@
-# Proof of Concept (PoC): Foudation models for timeseries forecasting 
+# Proof of Concept (PoC): Foundation Models for Time Series Forecasting 
 
-This step outlines the experimental design and organization for the development of [Nexus](https://github.com/fialhocoelho/Nexus/) model: a forecasting model using foundation models,
-proposing a knowledge distillation approach to achieve robust forecasts. The experiments aim to explore various aspects of model training, tuning, and inference to optimize the forecasting performance.
-This section explains the selection of teacher models, student models, calibration strategies, and which baseline models will be used to compare a generated forecast data.
-It also addresses key issues to be resolved before the experimentation process starts, including data selection, handling missing values, and the incorporation of exogenous variables related to Santos oceanic variables.
-
-![ioa results animation](images/timegpt_poc.gif)
+This Proof of Concept aims to validate if a foundation model can achieve similar results when compared with state-of-the-art time series forecasting techniques.
 
 ## Table of Contents
 
-- [Proof of Concept (PoC): Foudation models for timeseries forecasting](#proof-of-concept-poc-foudation-models-for-timeseries-forecasting)
-  - [Table of Contents](#table-of-contents)
-    - [Models](#models)
-      - [Teacher models](#teacher-models)
-      - [Student model](#student-model)
-      - [Calibration model](#calibration-model)
-    - [Baseline models](#baseline-models)
-    - [Issues to be Addressed:](#issues-to-be-addressed)
-    - [Variables](#variables)
-      - [Endogenous](#endogenous)
-      - [Exogenous](#exogenous)
-    - [Granularity](#granularity)
-    - [Inference Window](#inference-window)
-    - [Experiment Organization](#experiment-organization)
-    - [Proposed Initial Model Diagram](#proposed-initial-model-diagram)
-    - [Tables](#tables)
-      - [1st Stage of Experiments (Teacher models)](#1st-stage-of-experiments-teacher-models)
-      - [2nd Stage of Experiments (Student Model) TBD](#2nd-stage-of-experiments-student-model-tbd)
-      - [3rd Stage of Experiments (Baseline)](#3rd-stage-of-experiments-baseline)
+TBD
 
-### Models
-#### Teacher models 
-* [TimeGPT](https://arxiv.org/abs/2310.03589) (Foundation Model used for PoC)
-* [Chronos](https://arxiv.org/html/2403.07815v1) (Foundation Model)
-* [lag-llama](https://arxiv.org/abs/2310.08278) (Foundation Model)
-#### Student model
-* MLP (Standard ML baseline Model)
-* TBD
-#### Calibration model
-* TBD
-### Baseline models
-* [NHITS](https://arxiv.org/abs/2201.12886) (State-Of-Art model for timeseries prediction using ML)
-* GNN OMAE (Graph Model)
-* [TFT](https://arxiv.org/abs/1912.09363) (SoA for Multi-horizon Time Series Forecasting)
-* SARIMAX (ARIMA-like model for Seasonal univariate + exog)
+## Data
 
-### Issues to be Addressed:
-* Should we use data only from Praticagem or also from other regions? 
-* Some models do not accept missing data, and some series have missing data. Should we use interpolation or zero filling techniques?
-* Should we use SOFS or other data from numerical simulations as endo/exogenous variables for input to the models?
-    * **Problem:** Granularity of 3h. To deal with this in models that do not support series with different granularities, we would have to:
-        * Interpolate to have measurements with a granularity of 1h or
-        * Decide to run the models with a granularity of 3h to be able to use the SOFS as a baseline.
-* Actually, the most used foundation models are not the best choice for a good performance for long-term prediction, as they are specialized in short-term prediction, given the nature of the diversity of the data used to train the models. In the TimeGPT paper, they mention empirically considering that long-term predictions are those with more than 24 points.
-    * **Problem:** If we deal with granularity less than 1h, to predict a day in the future, we would need predictions greater than 24 points. Of the mentioned foundation model implementations, only TimeGPT presents an approach that uses pre-trained weights for long-term prediction, but they mention that this model is still incipient and was trained with a lower variety of data compared to the model for short-term prediction (<=24 prediction points).
-* Should we use estimates of carbon production for training/inference of the models?
-    * **Problem:** Learning curve x time for project delivery.
-* Should we use other variables from satellites/images?
-    * **Problem:** The foundation models chosen, by definition, do not work with encoded data. It would be necessary to alter the model to handle this data. In this case, the challenge would be to retrain them with this data domain. These models use weights already calculated from other GenAI-based SoA models (e.g., T5, Llama, etc.).
+### Chosen Data for experiments
 
-### Variables
-#### Endogenous
-* Current: Praticagem and other regions
-* Sea Surface Height (SSH): Praticagem and other regions
-* Astronomical tide: Praticagem and other regions
-#### Exogenous
-* Astronomical tide: Praticagem and other regions
+The Santos-São Vicente-Bertioga Estuarine System (SSVBES), situated on the southeastern Brazilian coast, is influenced by three main forcing processes: astronomical tide, river discharge, and meteorological tide. The latter is driven by the synoptic winds that blow over the nearby continental shelf, following Ekman dynamics, and enter Santos Bay as gravity waves. When winds blow from the North-Northeast, meteorological tide results in a reduction of sea surface height (SSH); when winds blow from the South-Southwest, it leads to an increase in SSH [1]. 
+
+### The dataset
+
+Our dataset spans **two years of data** from January 1, 2019, to September 1, 2021 (a total of 974 days) from the **Praticagem** measuring station from SSVBES. This location is equipped with sensors that collect measurements of oceanic variables: **SSH (Sea Surface Height)** and **water current speed**. For endogenous and exogenous data, we utilize numerical simulated data, specifically, **astronomical tide**. The input features contain *less than 4% missing data*. For this experiment, we *interpolated the missing data using a simple linear method* since the TimeGPT model does not accept gaps in inference data. For a mature pipeline, a robust set of methods for filling data can and should be tested to verify the impact on prediction results.
+
+### Splitting the Dataset
+
+Furthermore, the dataset is split into two sequential sets: the train set and the test set. The train set comprises the first 20 months of the time series data, while the test set comprises the last 4 months.
 
 ### Granularity
-I believe the ideal granularity for our testing scenario would be a periodicity of 1 hour, due to the limitation of foundation models in handling long-term predictions.
+
+The monitoring/simulated data was aggregated using a 60-minute step between windows, resulting in 3 measured points in the flow data for each hour. We chose this granularity due to the limitation of foundation models in handling long-term predictions (more than 24 forecast points).
+
+## Chosen Model: Nixtla TimeGPT
+
+Foundation models rely on their ability to generalize across different areas, especially with new data not present during training. In our quest for a foundation model capable of achieving results close to state-of-the-art forecasting methods using a zero-shot approach, we also considered the trade-off between accuracy and forecast generation time, as well as the challenge posed by limited availability of large data windows for training. It was during this search that we encountered a highly referenced model known as [TimeGPT](https://arxiv.org/abs/2310.03589). It leverages large public time series datasets to train TimeGPT, a Transformer-based model with self-attention mechanisms[2]. It captures diverse temporal patterns across various domains by leveraging a diverse dataset. TimeGPT employs an encoder-decoder structure with residual connections and layer normalization, generating forecasts based on historical values and local positional encoding. The model's attention-based mechanisms aim to accurately predict future distributions by capturing the diversity of past events[2].
+
+## Experiments
 
 ### Inference Window
-As it involves zero-shot learning strategies, I believe we can investigate an optimal window that correlates the size of the window with the computational cost/tokens used for training/inference. For proof of concept inference using TimeGPT, an incremental windowing strategy was used with padding = 1, where it consists of N predictions, where N is the number of measurement points in the test series. For elucidation:
-* 1st prediction step:
-    * **Inferred data:** N measurement points of the training series minus the last 23 points of the same series.
+
+In the paper [3], a large inference windows (larger than 5k measured ponts) cannot be setted due computer resources limitation. The paper above uses 20 months of data to train the models and ad inference window with 168 measured points (7 days) to forecast the next 24 hours using sliding windowing as we can se at the [figure 1](#fig1). 
+For the experiment we used Nixtla TimeGPT API to send data using increamental windowing to forecast the next 24 measured points ([figure 1](#fig1)). The incremental window was choosen to check de performance of related model infering a large data to be infered. 
+
+Given it involves zero-shot learning strategies, we propose investigating an optimal window that correlates window size with computational cost/tokens used for training/inference. **For this proof of concept inference using TimeGPT, we employed an incremental windowing strategy with padding = 1.** Here's how it works:
+
+* **1st prediction step:**
+    * **Inferred data:** N measurement points from the training series minus the last 23 points of the same series.
     * **Predicted data:** 24 points to be validated with the last 23 points of training plus the 1st measured point of the test series.  
-* 2nd prediction step: 
-    * **Inferred data:** N measurement points of the training series minus the last 22 points of the same series.
+
+* **2nd prediction step:** 
+    * **Inferred data:** N measurement points from the training series minus the last 22 points of the same series.
     * **Predicted data:** 24 points to be validated with the last 22 points of training plus the first 2 measured points of the test series.  
-* 24th prediction step: 
-    * **Inferred data:** Total of N measurement points of the training series.
+
+* **24th prediction step:** 
+    * **Inferred data:** Total of N measurement points from the training series.
     * **Predicted data:** 24 points to be validated with the first 24 points measured of the test series.
-* N-th prediction step: 
-    * **Inferred data:** Total of N measurement points of the training series plus N - 24 points of the test series.
+
+* **Last prediction step (2880th step):** 
+    * **Inferred data:** Total of N measurement points from the training series plus N - 24 points of the test series.
     * **Predicted data:** 24 points to be validated with the last 24 points of the test series.
 
-### Experiment Organization
-The experiments will be divided into 5 stages with objectives:
-1. Teacher models (pre-trained models)
-1. Student model (To be trained model)
-1. Calibration model
-1. Ablation Study
-1. Validation/Optimization (Running complete pipeline)
-
-### Proposed Initial Model Diagram
-The diagram below exemplifies an initial sketch of the proposed model with the aim of understanding the purpose of each element. 
+<br/><br/>
+<p id='fig1'></p>
 
 ![nexus-diagram](images/nexus_windowing_h.png)
+<center><h3>Figure 1: Types of Windowing</h3></center>
 
-### Tables
-#### 1st Stage of Experiments (Teacher models)
+### Baseline
 
-| Models    | Mode               | Exec Env      | Regions    | Endog Vars    | Exog Vars | #Fine-Tuning steps | #Epochs |
-|-----------|--------------------|---------------|------------|---------------|-----------|--------------------|---------|
-| TimeGPT   | Multivariate       | Nixtla API    | Praticagem | curr, ssh, at | at        | 500 (API)          | N/A     |
-| Chronos   | Multivariate       | Xeon + TitanV | Praticagem | curr, ssh, at | at        | 100 (optuna)       | 200     |
-| lag-llama | Multivariate       | Xeon + TitanV | Praticagem | curr, ssh, at | at        | 100 (optuna)       | 200     |
+To measure the experiment results we will use the paper [3] as baseline using Index of Agreement (IoA) and RMSE comparison metrics. 
 
+## Results
 
-#### 2nd Stage of Experiments (Student Model) TBD
+### Predicted Range
 
-| Models    | Mode         | Exec Env      | Endog Vars                                 | Exog Vars | #Fine-Tuning steps | #Epochs |
-|-----------|--------------|---------------|--------------------------------------------|-----------|--------------------|---------|
-| TBD       | Multivariate | Xeon + TitanV | curr, ssh, at, TimeGPT, Chronos, lag-llama | TBD       | 100 (optuna)       | 200     |
+Due to computational resource limitations, only the first 20 days of the test dataset were generated. As a result, the metrics for prediction evaluation may exhibit disturbances compared to the benchmark data, which were compared with 4 months of data.
 
 
-#### 3rd Stage of Experiments (Baseline)
+![ioa results animation](images/timegpt_poc.gif)
 
-| Models    | Mode               | Exec Env      | Regions    | Endog Vars    | Exog Vars | #Fine-Tuning steps | #Epochs |
-|-----------|--------------------|---------------|------------|---------------|-----------|--------------------|---------|
-| GNN OMAE  | Multivariate       | Xeon + TitanV | Praticagem | curr, ssh, at | at        | 100 (optuna)       | 200     |
-| N-HITS    | Multivariate       | Xeon + TitanV | Praticagem | curr, ssh, at | at        | 100 (optuna)       | 200     |
-| TFT       | Multivariate       | Xeon + TitanV | Praticagem | curr, ssh, at | at        | 100 (optuna)       | 200     |
-| SARIMAX   | Univariate         | Xeon + TitanV | Praticagem | curr, ssh, at | at        | 100 (optuna)       | N/A     |
+## Conclusion
+
+TBD.
