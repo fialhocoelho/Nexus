@@ -11,7 +11,7 @@ This Proof of Concept aims to validate if a foundation model can achieve similar
     - [The dataset](#the-dataset)
     - [Splitting the Dataset](#splitting-the-dataset)
     - [Granularity](#granularity)
-  - [Chosen Model: Nixtla TimeGPT](#chosen-model-nixtla-timegpt)
+  - [Chosen Model: Nixtla TimeGPT-1](#chosen-model-nixtla-timegpt-1)
   - [Experiments](#experiments)
     - [Inference Window](#inference-window)
     - [Baseline](#baseline)
@@ -28,7 +28,7 @@ The Santos-São Vicente-Bertioga Estuarine System (SSVBES), situated on the sout
 
 ### The dataset
 
-Our dataset spans **two years of data** from January 1, 2019, to September 1, 2021 (a total of 974 days) from the **Praticagem** measuring station from SSVBES. This location is equipped with sensors that collect measurements of oceanic variables: **SSH (Sea Surface Height)** and **water current speed**. For endogenous and exogenous data, we utilize numerical simulated data, specifically, **astronomical tide**. The input features contain *less than 4% missing data*. For this experiment, we *interpolated the missing data using a simple linear method* since the TimeGPT model does not accept gaps in inference data. For a mature pipeline, a robust set of methods for filling data can and should be tested to verify the impact on prediction results.
+Our dataset spans **two years of data** from January 1, 2019, to September 1, 2021 (a total of 974 days) from the **Praticagem** measuring station from SSVBES. This location is equipped with sensors that collect measurements of oceanic variables: **SSH (Sea Surface Height)** and **water current speed**. For endogenous and exogenous data, we utilize numerical simulated data, specifically, **astronomical tide**. The input features contain *less than 4% missing data*. For this experiment, we *interpolated the missing data using a simple linear method* since the TimeGPT-1 model does not accept gaps in inference data. For a mature pipeline, a robust set of methods for filling data can and should be tested to verify the impact on prediction results.
 
 ### Splitting the Dataset
 
@@ -38,18 +38,18 @@ Furthermore, the dataset is split into two sequential sets: the train set and th
 
 The monitoring/simulated data was aggregated using a 60-minute step between windows, resulting in 3 measured points in the flow data for each hour. We chose this granularity due to the limitation of foundation models in handling long-term predictions (more than 24 forecast points).
 
-## Chosen Model: Nixtla TimeGPT
+## Chosen Model: Nixtla TimeGPT-1
 
-Foundation models rely on their ability to generalize across different areas, especially with new data not present during training. In our quest for a foundation model capable of achieving results close to state-of-the-art forecasting methods using a zero-shot approach, we also considered the trade-off between accuracy and forecast generation time, as well as the challenge posed by limited availability of large data windows for training. It was during this search that we encountered a highly referenced model known as [TimeGPT](https://arxiv.org/abs/2310.03589). It leverages large public time series datasets to train TimeGPT, a Transformer-based model with self-attention mechanisms[2]. It captures diverse temporal patterns across various domains by leveraging a diverse dataset. TimeGPT employs an encoder-decoder structure with residual connections and layer normalization, generating forecasts based on historical values and local positional encoding. The model's attention-based mechanisms aim to accurately predict future distributions by capturing the diversity of past events[2].
+Foundation models rely on their ability to generalize across different areas, especially with new data not present during training. In our quest for a foundation model capable of achieving results close to state-of-the-art forecasting methods using a zero-shot approach, we also considered the trade-off between accuracy and forecast generation time, as well as the challenge posed by limited availability of large data windows for training. It was during this search that we encountered a highly referenced model known as [TimeGPT-1](https://arxiv.org/abs/2310.03589). It leverages large public time series datasets to train TimeGPT-1, a Transformer-based model with self-attention mechanisms[2]. It captures diverse temporal patterns across various domains by leveraging a diverse dataset. TimeGPT-1 employs an encoder-decoder structure with residual connections and layer normalization, generating forecasts based on historical values and local positional encoding. The model's attention-based mechanisms aim to accurately predict future distributions by capturing the diversity of past events[2].
 
 ## Experiments
 
 ### Inference Window
 
 In the paper [3], a large inference windows (larger than 5k measured points) cannot be set due to computer resources limitations. The paper above uses 20 months of data to train the models and an inference window with 168 measured points (7 days) to forecast the next 24 hours using sliding windowing as we can see in [figure 1](#fig1). 
-For the experiment, we used Nixtla TimeGPT API to send data using incremental windowing to forecast the next 24 measured points ([figure 1](#fig1)). The incremental window was chosen to check the performance of the related model inferring a large data to be inferred. 
+For the experiment, we used Nixtla TimeGPT-1 API to send data using incremental windowing to forecast the next 24 measured points ([figure 1](#fig1)). The incremental window was chosen to check the performance of the related model inferring a large data to be inferred. 
 
-Given it involves zero-shot learning strategies, we propose investigating an optimal window that correlates window size with computational cost/tokens used for training/inference. **For this proof of concept inference using TimeGPT, we employed an incremental windowing strategy with padding = 1.** Here's how it works:
+Given it involves zero-shot learning strategies, we propose investigating an optimal window that correlates window size with computational cost/tokens used for training/inference. **For this proof of concept inference using TimeGPT-1, we employed an incremental windowing strategy with padding = 1.** Here's how it works:
 
 * **1st prediction step:**
     * **Inferred data:** N measurement points from the training series minus the last 23 points of the same series.
