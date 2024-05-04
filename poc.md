@@ -9,6 +9,7 @@ This Proof of Concept aims to validate if a foundation model can achieve similar
   - [Data](#data)
     - [Chosen Data for experiments](#chosen-data-for-experiments)
     - [The dataset](#the-dataset)
+      - [Data sample](#data-sample)
     - [Splitting the Dataset](#splitting-the-dataset)
     - [Granularity](#granularity)
   - [Chosen Model: Nixtla TimeGPT-1](#chosen-model-nixtla-timegpt-1)
@@ -29,6 +30,25 @@ The Santos-São Vicente-Bertioga Estuarine System (SSVBES), situated on the sout
 ### The dataset
 
 Our dataset spans **two years of data** from January 1, 2019, to September 1, 2021 (a total of 974 days) from the **Praticagem** measuring station from SSVBES. This location is equipped with sensors that collect measurements of oceanic variables: **SSH (Sea Surface Height)** and **water current speed**. For endogenous and exogenous data, we utilize numerical simulated data, specifically, **astronomical tide**. The input features contain *less than 4% missing data*. For this experiment, we *interpolated the missing data using a simple linear method* since the TimeGPT-1 model does not accept gaps in inference data. For a mature pipeline, a robust set of methods for filling data can and should be tested to verify the impact on prediction results.
+
+#### Data sample
+
+|      ds             |       y       |    ssh   |    at   | unique_id |
+|---------------------|---------------|----------|---------|-----------|
+| 2020-01-01 00:00:00 |   0.174852    |   0.70   | 0.779387| praticagem|
+| 2020-01-01 01:00:00 |  -0.091108    |   0.66   | 0.653528| praticagem|
+| 2020-01-01 02:00:00 |  -0.260948    |   0.48   | 0.502217| praticagem|
+|        ...          |     ...       |    ...   |   ...   |    ...    |
+| 2021-08-31 22:00:00 |   0.020116    |   0.47   | 0.819113| praticagem|
+| 2021-08-31 23:00:00 |   0.108026    |   0.49   | 0.871922| praticagem|
+
+where:
+
+- `ds`: Datestamp
+- `y`: Current Speed
+- `ssh`: Sea Surface Height
+- `at`: Astronomical tide
+- `unique_id`: `id` to identify the region
 
 ### Splitting the Dataset
 
