@@ -1,29 +1,33 @@
-# Experiments setup
+# Proof of Concept (PoC): Foudation models for timeseries forecasting 
 
 This step outlines the experimental design and organization for the development of [Nexus](https://github.com/fialhocoelho/Nexus/) model: a forecasting model using foundation models,
 proposing a knowledge distillation approach to achieve robust forecasts. The experiments aim to explore various aspects of model training, tuning, and inference to optimize the forecasting performance.
 This section explains the selection of teacher models, student models, calibration strategies, and which baseline models will be used to compare a generated forecast data.
 It also addresses key issues to be resolved before the experimentation process starts, including data selection, handling missing values, and the incorporation of exogenous variables related to Santos oceanic variables.
 
+![ioa results animation](images/timegpt_poc.gif)
+
 ## Table of Contents
 
-- [Models](#models)
-  - [Teacher models](#teacher-models)
-  - [Student model](#student-model)
-  - [Calibration model](#calibration-model)
-- [Baseline models](#baseline-models)
-- [Issues to be Addressed](#issues-to-be-addressed)
-- [Variables](#variables)
-  - [Endogenous](#endogenous)
-  - [Exogenous](#exogenous)
-- [Granularity](#granularity)
-- [Inference Window](#inference-window)
-- [Experiment Organization](#experiment-organization)
-- [Proposed Initial Model Diagram](#proposed-initial-model-diagram)
-- [Tables](#tables)
-  - [1st Stage of Experiments (Teacher models)](#1st-stage-of-experiments-teacher-models)
-  - [2nd Stage of Experiments (Student Model)](#2nd-stage-of-experiments-student-model)
-  - [3rd Stage of Experiments (Baseline)](#3rd-stage-of-experiments-baseline)
+- [Proof of Concept (PoC): Foudation models for timeseries forecasting](#proof-of-concept-poc-foudation-models-for-timeseries-forecasting)
+  - [Table of Contents](#table-of-contents)
+    - [Models](#models)
+      - [Teacher models](#teacher-models)
+      - [Student model](#student-model)
+      - [Calibration model](#calibration-model)
+    - [Baseline models](#baseline-models)
+    - [Issues to be Addressed:](#issues-to-be-addressed)
+    - [Variables](#variables)
+      - [Endogenous](#endogenous)
+      - [Exogenous](#exogenous)
+    - [Granularity](#granularity)
+    - [Inference Window](#inference-window)
+    - [Experiment Organization](#experiment-organization)
+    - [Proposed Initial Model Diagram](#proposed-initial-model-diagram)
+    - [Tables](#tables)
+      - [1st Stage of Experiments (Teacher models)](#1st-stage-of-experiments-teacher-models)
+      - [2nd Stage of Experiments (Student Model) TBD](#2nd-stage-of-experiments-student-model-tbd)
+      - [3rd Stage of Experiments (Baseline)](#3rd-stage-of-experiments-baseline)
 
 ### Models
 #### Teacher models 
