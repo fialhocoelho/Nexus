@@ -137,7 +137,7 @@ Due to computational resource limitations, only the first 20 days of the test da
 | GNN                    | 0.891     | < 0.019    |
 | **TimeGPT-1**          | **0.954** | 0.031      |
 
-<h4>Table 2: The performance results of forecasting methods for the Praticagem station, extracted from paper [[1](#references)],
+<h4>Table 2: The performance results of forecasting methods for the Praticagem station, extracted from paper <a href="#references">[1]</a>,
 <br/>are compared against the forecasting results from TimeGPT-1.
 <br/>(The highest IoA is highlighted in bold, indicating the best result).</h4>
 
@@ -160,6 +160,8 @@ Table 2 shows that, despite having a higher standard deviation than the baseline
 * Use TimeGPT-1 as Teacher models in the Nexus model pipeline (distillation model).
 
 ### References
+
+<p id="references"> </p>
 
 - [1] Fialho Coelho, Jefferson, et al. "Modeling Oceanic Variables With Graph-Guided Networks for Irregularly Sampled Multivariate Time Series." International Conference on Offshore Mechanics and Arctic Engineering. Vol. 86878. American Society of Mechanical Engineers, 2023. 
 - [2] Liao, Wenlong, et al. "TimeGPT in Load Forecasting: A Large Time Series Model Perspective." arXiv preprint arXiv:2404.04885 (2024).
