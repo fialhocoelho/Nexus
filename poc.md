@@ -105,7 +105,7 @@ To measure the experiment results, we will use the paper [[1](#references)] as a
 
 ### Metrics
 
-For all experiments, presented results using Index of Agreement (IoA)[3] comparison metrics.
+For all experiments, presented results using Index of Agreement (IoA)[[3](#references)] comparison metrics.
 
 The Index of Agreement ($IoA$) is calculated using the formula:
 
