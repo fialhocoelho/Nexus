@@ -137,7 +137,7 @@ Due to computational resource limitations, only the first 20 days of the test da
 | GNN                    | 0.891     | < 0.019    |
 | **TimeGPT-1**          | **0.954** | 0.031      |
 
-<h4>Table 2: The performance results of forecasting methods for the Praticagem station, extracted from paper <a href="#references">[1]</a>,
+<h4>Table 2: The performance results of forecasting methods for the Praticagem station, extracted from paper [<a href="#references">1</a>],
 <br/>are compared against the forecasting results from TimeGPT-1.
 <br/>(The highest IoA is highlighted in bold, indicating the best result).</h4>
 
