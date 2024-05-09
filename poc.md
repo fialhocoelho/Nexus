@@ -166,3 +166,11 @@ Table 2 shows that, despite having a higher standard deviation than the baseline
 - [1] Fialho Coelho, Jefferson, et al. "Modeling Oceanic Variables With Graph-Guided Networks for Irregularly Sampled Multivariate Time Series." International Conference on Offshore Mechanics and Arctic Engineering. Vol. 86878. American Society of Mechanical Engineers, 2023. 
 - [2] Liao, Wenlong, et al. "TimeGPT in Load Forecasting: A Large Time Series Model Perspective." arXiv preprint arXiv:2404.04885 (2024).
 - [3] Willmott, Cort J. "On the validation of models." Physical geography 2.2 (1981): 184-194. 
+
+## TODO tasks
+- [ ] Create a plot:
+  - [x] timeGPT
+  - [ ] Chronos
+- [ ] Check moving variance to check which points the models are good or bad to predict
+- [ ] To fix model diagram for representing the loss calibration from teacher models
+- [ ] Study: How to fine-tune chronos model?
