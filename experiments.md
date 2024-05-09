@@ -30,12 +30,14 @@ It also addresses key issues to be resolved before the experimentation process s
 * [TimeGPT](https://arxiv.org/abs/2310.03589) (Foundation Model used for PoC)
 * [Chronos](https://arxiv.org/html/2403.07815v1) (Foundation Model)
 * [lag-llama](https://arxiv.org/abs/2310.08278) (Foundation Model)
+
 #### Student model
-* MLP (Standard ML baseline Model)
-* TBD
+* Residual MLP
+
 #### Calibration model
-* TBD
-### Baseline models
+* Optuna
+
+### Storytelling Baseline models
 * [NHITS](https://arxiv.org/abs/2201.12886) (State-Of-Art model for timeseries prediction using ML)
 * GNN OMAE (Graph Model)
 * [TFT](https://arxiv.org/abs/1912.09363) (SoA for Multi-horizon Time Series Forecasting)
@@ -99,23 +101,28 @@ The diagram below exemplifies an initial sketch of the proposed model with the a
 
 | Models    | Mode               | Exec Env      | Regions    | Endog Vars    | Exog Vars | #Fine-Tuning steps | #Epochs |
 |-----------|--------------------|---------------|------------|---------------|-----------|--------------------|---------|
-| TimeGPT   | Multivariate       | Nixtla API    | Praticagem | curr, ssh, at | at        | 500 (API)          | N/A     |
-| Chronos   | Multivariate       | Xeon + TitanV | Praticagem | curr, ssh, at | at        | 100 (optuna)       | 200     |
-| lag-llama | Multivariate       | Xeon + TitanV | Praticagem | curr, ssh, at | at        | 100 (optuna)       | 200     |
+| TimeGPT   | Multivariate       | Nixtla API    | Praticagem | curr, ssh, at | at        | N/A                | N/A     |
+| Chronos   | Univariate         | Xeon + TitanV | Praticagem | curr          | at        | N/A                | N/A     |
+| N-HITS    | Multivariate       | Xeon + TitanV | Praticagem | curr, ssh, at | at        | N/A                | 200     |
 
 
 #### 2nd Stage of Experiments (Student Model) TBD
 
-| Models    | Mode         | Exec Env      | Endog Vars                                 | Exog Vars | #Fine-Tuning steps | #Epochs |
-|-----------|--------------|---------------|--------------------------------------------|-----------|--------------------|---------|
-| TBD       | Multivariate | Xeon + TitanV | curr, ssh, at, TimeGPT, Chronos, lag-llama | TBD       | 100 (optuna)       | 200     |
+| Models       | Mode         | Exec Env      | Endog Vars    | Distillation loss                 | Exog Vars | #FT steps | #Epochs |
+|--------------|--------------|---------------|---------------|-----------------------------------|-----------|-----------|---------|
+| Residual MLP | Multivariate | Xeon + TitanV | curr, ssh, at | TimeGPT(ŷ), Chronos(ŷ), N-HITS(ŷ) | at        | N/A       | 200     |
 
 
-#### 3rd Stage of Experiments (Baseline)
+#### 3rd Stage of tunning Student model Calibration (Baseline)
+
+| Models        | Plataform  | Exec Env      | Main Hyperparameters    | Others HP    | #Fine-Tuning steps | Parallel? |
+|---------------|------------|---------------|-------------------------|--------------|--------------------|-----------|
+| Residual MLP  | Optuna     | Xeon + TitanV | Beta (Distil. Balancer) | TBD          | TBD                | Yes       |
+
+
+#### 4th Stage of Experiments (Baseline)
 
 | Models    | Mode               | Exec Env      | Regions    | Endog Vars    | Exog Vars | #Fine-Tuning steps | #Epochs |
 |-----------|--------------------|---------------|------------|---------------|-----------|--------------------|---------|
 | GNN OMAE  | Multivariate       | Xeon + TitanV | Praticagem | curr, ssh, at | at        | 100 (optuna)       | 200     |
-| N-HITS    | Multivariate       | Xeon + TitanV | Praticagem | curr, ssh, at | at        | 100 (optuna)       | 200     |
-| TFT       | Multivariate       | Xeon + TitanV | Praticagem | curr, ssh, at | at        | 100 (optuna)       | 200     |
 | SARIMAX   | Univariate         | Xeon + TitanV | Praticagem | curr, ssh, at | at        | 100 (optuna)       | N/A     |
