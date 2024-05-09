@@ -1,7 +1,15 @@
 # Research project
+
 We propose a model that leverages the state of the art in foundation models trained on massive datasets, along with another simpler model trained on a smaller dataset specific to the domain of the time series to be forecasted. This combination aims to bring out the best of both worlds: increasing prediction accuracy compared to individual model results, as well as reducing computational costs by avoiding expensive training and fine-tuning routines.
 
-Here, we describe an experimental design and organization for the development of [Nexus](https://github.com/fialhocoelho/Nexus/) model.
+## Table of Contents
+
+- [Research project](#research-project)
+  - [Research problem](#research-problem)
+  - [Related work](#related-work)
+  - [Ongoing Tasks](#ongoing-tasks)
+  - [Proposal](#proposal)
+  - [Initial Results](#initial-results)
 
 ## Research problem
 
@@ -22,3 +30,15 @@ The research problem revolves around the **high computational costs associated w
 
 ## Initial Results
 [PoC](https://github.com/fialhocoelho/nexus/poc.md)
+
+# Initial paper (Bracis)
+
+* Distillations:
+    * 1st TimeGPT without tuning + residualMLP
+    * 2nd Chronos without tuning + residualMLP
+    * 3rd (TimeGPT + Chronos) without tuning + residualMLP
+
+## Future works
+* How to fine-tune Chonos model?
+* Canonical correlation analysis (Similary from model's internal representation)
+* Feature Destillation: Create a destillation related to internal Know-how: [INITIALIZING MODELS WITH LARGER ONES](https://arxiv.org/pdf/2311.18823)
