@@ -10,12 +10,37 @@ from nixtlats import NixtlaClient
 from neuralforecast.models import MLP, NBEATS
 from neuralforecast.losses.pytorch import HuberLoss
 from neuralforecast.core import NeuralForecast
-from IPython.display import clear_output
 from tqdm import tqdm
 import pickle
+import yaml
+
+def load_yaml_config(file_path):
+    """
+    Load configuration parameters from a YAML file.
+
+    Parameters:
+    file_path (str): Path to the YAML file containing configuration parameters.
+
+    Returns:
+    dict: A dictionary containing the configuration parameters.
+    """
+    with open(file_path, 'r') as file:
+        config = yaml.safe_load(file)
+    return config
+
+# Function to load data from a pickle file
+def load_pickle(file_path):
+    """Load data from a pickle file."""
+    with open(file_path, 'rb') as f:
+        return pickle.load(f)
+
+# Function to create input and output sequences
+# def create_sequences(raw_data, context_len, forecast_len):
+#    """Create input and output sequences from raw data."""
+#    return create_input_output_sequences(raw_data, context_len, forecast_len)
 
 # Function to create input-output sequences for training
-def create_input_output_sequences(data, context_window_len, forecast_len):
+def create_sequences(data, context_window_len, forecast_len):
     """
     Create input-output sequences for training.
 
@@ -34,6 +59,11 @@ def create_input_output_sequences(data, context_window_len, forecast_len):
         # Output sequence (predict the next forecast_len points)
         y.append(data[i+context_window_len:i+context_window_len+forecast_len]) 
     return np.array(X), np.array(y)
+
+# Function to split data into training and test sets
+def split_data(data, split_idx):
+    """Split data into training and test sets."""
+    return data[:split_idx], data[split_idx:]
 
 # Function to calculate the Index of Agreement (IoA)
 def calculate_ioa(y_true, y_pred):
@@ -74,7 +104,6 @@ def plot_time_series(y_true, y_pred):
     plt.legend()
     plt.grid(True)
     plt.show()
-
 
 def load_api_key(file_path):
     """
