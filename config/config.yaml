@@ -4,7 +4,9 @@ data:
   processed_test_df: "test_df_praticagem.csv"
   intermediate_path: "data/interim/" 
   timegpt_fcst_file: "forecast_cache_fcst_y_validated_20240513_212354.pkl"
-  chronos_fcst_file: "chronos_forecast_cache_20240518_160948.pkl"
+  timegpt_cache_prefix: "timegpt_forecast_cache"
+  chronos_fcst_file: "chronos_forecast_cache_20240520_000009.pkl"
+  chronos_cache_prefix: "chronos_forecast_cache"
   crop_target_datetime: "2021-01-01 00:00:00"
   default_seed: 42
 model:
@@ -17,3 +19,9 @@ model:
   input_size: 1
   hidden_size: 64
   train_shuffle: true
+  timegpt_finetune_steps: 0
+  nixtla_api_key_path: "nixtla_api.key"
+  chronos_finetune_steps: 0
+  attempts_after_failure: 30
+  device: "cuda"
+  chronos_t5_model: "amazon/chronos-t5-large"
