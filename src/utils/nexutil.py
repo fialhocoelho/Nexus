@@ -6,11 +6,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from chronos import ChronosPipeline
-from nixtlats import NixtlaClient
-from neuralforecast.models import MLP, NBEATS
-from neuralforecast.losses.pytorch import HuberLoss
-from neuralforecast.core import NeuralForecast
-from tqdm import tqdm
+from nixtla import NixtlaClient
+#from neuralforecast.models import MLP, NBEATS
+#from neuralforecast.losses.pytorch import HuberLoss
+#from neuralforecast.core import NeuralForecast
+#from tqdm import tqdm
 import pickle
 import yaml
 

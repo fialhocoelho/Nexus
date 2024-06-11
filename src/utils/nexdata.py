@@ -4,7 +4,249 @@ import pandas as pd
 import numpy as np
 import pickle
 import torch
+import logging
+from tqdm import tqdm
+
+from datetime import datetime
 from torch.utils.data import DataLoader, TensorDataset
+
+# after neurips
+
+import os
+import logging
+from datetime import datetime
+import torch
+
+class NexData:
+    """
+    A class to handle data and configuration for the Nexus project.
+
+    Attributes:
+    - nexus_folder (str): Path to the Nexus project folder.
+    - config_path (str): Path to the configuration YAML file.
+    - logger (logging.Logger): Logger instance for the class.
+    - timestamp (str): Timestamp of the instance creation.
+    - config (dict): Loaded configuration parameters.
+    - data_params (dict): Data-related parameters from the config.
+    - model_params (dict): Model-related parameters from the config.
+    - features (dict): Feature-related parameters from the config.
+    - device (torch.device): Torch device to be used for computations.
+    - raw_dir (str): Path to the raw data directory.
+    - processed_dir (str): Path to the processed data directory.
+    - interim_dir (str): Path to the intermediate data directory.
+    - train_folder_path (str): Path to the training data folder.
+    - test_folder_path (str): Path to the testing data folder.
+    """
+    
+    def __init__(self, nexus_folder='.', config_path='config/config.yaml'):
+        """
+        Initialize the NexData class.
+
+        Parameters:
+        - nexus_folder (str): Path to the Nexus project folder.
+            Default is '.'.
+        - config_path (str): Path to the configuration YAML file.
+            Default is 'config/config.yaml'.
+        """
+        log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        logging.basicConfig(level=logging.INFO, format=log_fmt)
+        self.logger = logging.getLogger(__name__)
+        self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        # Load the configuration parameters from the YAML file
+        if not isinstance(config_path, str):
+            raise ValueError("config_path must be a string")
+        
+        if config_path == 'config/config.yaml':
+            config_path = os.path.join(nexus_folder, config_path)
+        
+        self.config = load_yaml_config(config_path)
+        self.config_path = config_path
+
+        self.logger.info(f'Loading config file {self.config_path}')
+        
+        self.data_params = self.config['data']
+        self.model_params = self.config['model']
+        self.features = self.config['features']
+
+        # Process each feature
+        for feature in self.features:
+            train_filepath = os.path.join(
+                nexus_folder,
+                self.data_params['raw_path'],
+                self.data_params['train_folder'],
+                self.features[feature]['train_filename'])
+            self.features[feature]['train_filepath'] = train_filepath
+            self.logger.info(f'{feature} train path: {train_filepath}')
+
+            test_filepath = os.path.join(
+                nexus_folder,
+                self.data_params['raw_path'],
+                self.data_params['test_folder'],
+                self.features[feature]['test_filename'])
+            self.features[feature]['test_filepath'] = test_filepath
+            self.logger.info(f'{feature} test path: {test_filepath}')
+
+        # Set seeds for reproducibility
+        if 'default_seed' in self.data_params:
+            set_random_seeds(self.data_params['default_seed'])
+            self.logger.info(f'Random seed: {self.data_params["default_seed"]}')
+        else:
+            self.logger.warning("No default seed found in data parameters")
+
+        # Define the device
+        try:
+            self.device = torch.device(self.model_params['device'])
+            self.logger.info(f'Default device: {self.model_params["device"]}')
+        except Exception as e:
+            self.logger.error(f"An error occurred when setting device: {e}")
+            raise
+
+        # Define paths
+        self.raw_dir = os.path.join(nexus_folder, self.data_params['raw_path'])
+        self.processed_dir = os.path.join(nexus_folder,
+                                        self.data_params['processed_path'])
+        self.interim_dir = os.path.join(nexus_folder,
+                                        self.data_params['intermediate_path'])
+        self.forecasted_dir = os.path.join(nexus_folder,
+                                        self.data_params['forecasted_path'])
+        self.logger.info('Defining paths...')
+
+        self.train_folder_path = os.path.join(self.raw_dir,
+                                            self.data_params['train_folder'])
+        self.test_folder_path = os.path.join(self.raw_dir,
+                                            self.data_params['test_folder'])
+
+
+def process_dataframe(df_source,
+                        start_date,
+                        end_date,
+                        freq='1h',
+                        interp_method=None,
+                        datetime_col='datetime',
+                        round_freq='5min'):
+    """
+    Process a dataframe to fill gaps in the datetime column and interpolate
+    missing values.
+
+    Parameters:
+    df_source (pd.DataFrame): Source dataframe.
+    start_date (str or pd.Timestamp): Start date for the date range.
+    end_date (str or pd.Timestamp): End date for the date range.
+    freq (str): Frequency for the new date range. Default is '1h'.
+    interp_method (str, optional): Interpolation method. Default is None.
+    datetime_col (str): Name of the datetime column. Default is 'datetime'.
+    round_freq (str): Frequency to round the datetime values. Default is '5min'.
+
+    Returns:
+    pd.DataFrame: Processed dataframe with interpolated values.
+    """
+    if not isinstance(df_source, pd.DataFrame):
+        raise ValueError("df_source must be a pandas DataFrame")
+    if not isinstance(start_date, (str, pd.Timestamp)):
+        raise ValueError("start_date must be a string or pandas Timestamp")
+    if not isinstance(end_date, (str, pd.Timestamp)):
+        raise ValueError("end_date must be a string or pandas Timestamp")
+    if not isinstance(freq, str):
+        raise ValueError("freq must be a string")
+    if interp_method and interp_method not in [
+        'linear', 'time', 'index', 'values', 'nearest', 'zero', 'slinear',
+        'quadratic', 'cubic', 'barycentric', 'krogh', 'polynomial', 'spline',
+        'piecewise_polynomial', 'pchip', 'akima', 'cubicspline'
+    ]:
+        intrp_msg = 'interp_method must be a valid interpolation method or None'
+        raise ValueError(intrp_msg)
+    if not isinstance(datetime_col, str):
+        raise ValueError("datetime_col must be a string")
+    if not isinstance(round_freq, str):
+        raise ValueError("round_freq must be a string")
+
+    df_original = df_source.copy()
+
+    # Remove timezone from the original dataframe
+    df_original[datetime_col] = pd.to_datetime(
+        df_original[datetime_col]).dt.tz_localize(None)
+
+    # Create a DataFrame with the new date range
+    df_processed = pd.DataFrame({datetime_col: pd.date_range(start=start_date,
+                                                            end=end_date,
+                                                            freq=freq)})
+
+    # Round datetime values to match existing values in the original dataframe
+    df_original[datetime_col] = df_original[datetime_col].dt.round(round_freq)
+
+    # Merge original and processed dataframes to fill gaps in datetime
+    merged_df = pd.merge(df_processed, df_original, how='left', on=datetime_col)
+
+    # Interpolate missing values if interpolation method is provided
+    if interp_method:
+        try:
+            interpolated_df = merged_df.interpolate(method=interp_method,
+                                                    limit_direction='both')
+        except ValueError as e:
+            raise ValueError(f"Interpolation failed: {e}")
+    else:
+        interpolated_df = merged_df
+
+    final_df = interpolated_df.drop_duplicates(
+        subset=datetime_col, keep='first').reset_index(drop=True)
+
+    # Check for NaN values in columns other than 'datetime'
+    check_isna = final_df.drop(columns=[datetime_col]).isnull().values.any()
+    if check_isna and interp_method:
+        raise ValueError("The df contains NaN values in cols.")
+
+    return final_df
+
+def generate_indices(df, context_len, forecast_len, shift, mode="sliding"):
+    """
+    Generate indices for context and forecast windows from a dataframe.
+
+    Parameters:
+    df (pd.DataFrame): Source dataframe.
+    context_len (int): Length of the context window.
+    forecast_len (int): Length of the forecast window.
+    shift (int): Shift step to slide the window.
+    mode (str): Mode for generating indices, either "sliding" or "fixed".
+
+    Returns:
+    list: Indices for context windows.
+    list: Indices for forecast windows.
+    """
+    # Validate input parameters
+    if not isinstance(df, pd.DataFrame):
+        raise ValueError("df must be a pandas DataFrame")
+    if not isinstance(context_len, int) or context_len <= 0:
+        raise ValueError("context_len must be a positive integer")
+    if not isinstance(forecast_len, int) or forecast_len <= 0:
+        raise ValueError("forecast_len must be a positive integer")
+    if not isinstance(shift, int) or shift <= 0:
+        raise ValueError("shift must be a positive integer")
+    if mode not in ["sliding", "fixed"]:
+        raise ValueError("mode must be either 'sliding' or 'fixed'")
+
+    # Calculate the total number of windows that can be generated
+    range_size = int((df.shape[0] - context_len - forecast_len) / shift) + 1
+    
+    # Initialize lists to store the indices for context and forecast windows
+    X_index = []
+    y_index = []
+
+    # Loop to generate indices for each window
+    for i in tqdm(range(range_size)):
+        X_start = shift * i  # Start index for the context window
+        X_end = X_start + context_len  # End index for the context window
+        y_start = X_end  # Start index for the forecast window
+        y_end = y_start + forecast_len  # End index for the forecast window
+
+        # Append the indices for the context and forecast windows
+        if mode == 'sliding':
+            X_index.append(df[X_start:X_end].index)
+        if mode == 'fixed':
+            X_index.append(df[0:X_end].index)
+        y_index.append(df[y_start:y_end].index)
+
+    return X_index, y_index
 
 # Function to load data from a pickle file
 def load_pickle(file_path):
@@ -31,9 +273,19 @@ def set_random_seeds(seed):
 
     Parameters:
     seed (int): The seed value to be set.
-    """
+    """  
     torch.manual_seed(seed)
-    np.random.seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
+################################################################################
+################################################################################
+####################                                        ####################
+####################    Functions before Neurips dataset    ####################
+####################                                        ####################
+################################################################################
+################################################################################
 
 def load_processed_data(processed_dir, train_filename, test_filename):
     """
@@ -70,6 +322,26 @@ def create_sequences(series, context_window_len, forecast_len):
         y.append(series[(i + context_window_len):(i + context_window_len + forecast_len)])
     return np.array(X), np.array(y)
 
+'''
+def create_sequences(series, context_window_len, forecast_len):
+    """
+    Create input and output sequences for training and testing.
+
+    Parameters:
+    series (np.ndarray): The time series data.
+    context_window_len (int): The length of the input sequence.
+    forecast_len (int): The length of the forecast (output) sequence.
+
+    Returns:
+    tuple: (np.ndarray, np.ndarray) Input and output sequences.
+    """
+    X, y = [], []
+    for i in range(len(series) - context_window_len - forecast_len + 1):
+        X.append(series[i:(i + context_window_len)])
+        y.append(series[(i + context_window_len):(i + context_window_len + forecast_len)])
+    return np.array(X), np.array(y)
+'''
+    
 def split_data(data, split_index):
     """
     Split data into training and test sets.
@@ -97,7 +369,7 @@ def load_pickle(file_path):
         return pickle.load(file)
 
 def transform_data(config_path,
-                   to_root_dir=None,
+                   nexus_folder=None,
                    teacher_rule='mean'):
     """
     Transform data using configuration parameters from a YAML file.
@@ -117,8 +389,8 @@ def transform_data(config_path,
     set_random_seeds(data_params['default_seed'])
 
     # Define paths
-    processed_dir = os.path.join(to_root_dir, data_params['processed_path'])
-    interim_dir = os.path.join(to_root_dir, data_params['intermediate_path'])
+    processed_dir = os.path.join(nexus_folder, data_params['processed_path'])
+    interim_dir = os.path.join(nexus_folder, data_params['intermediate_path'])
 
     # Load dataframes from source
     train_df, test_df = load_processed_data(processed_dir, data_params['processed_train_df'], data_params['processed_test_df'])
