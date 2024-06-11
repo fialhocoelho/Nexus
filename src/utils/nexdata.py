@@ -38,7 +38,9 @@ class NexData:
     - test_folder_path (str): Path to the testing data folder.
     """
     
-    def __init__(self, nexus_folder='.', config_path='config/config.yaml'):
+    def __init__(self, nexus_folder='.',
+                 config_path='config/config.yaml',
+                 log_level=logging.INFO):
         """
         Initialize the NexData class.
 
@@ -47,10 +49,13 @@ class NexData:
             Default is '.'.
         - config_path (str): Path to the configuration YAML file.
             Default is 'config/config.yaml'.
+        - log_level (int): Logging level to use for the logger.
+            Default is logging.INFO.
         """
-        log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        logging.basicConfig(level=logging.INFO, format=log_fmt)
+        # Set up logging
         self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(log_level)
+
         self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         # Load the configuration parameters from the YAML file
@@ -62,9 +67,8 @@ class NexData:
         
         self.config = load_yaml_config(config_path)
         self.config_path = config_path
+        self.logger.debug(f" Config loaded from: {self.config_path}")
 
-        self.logger.info(f'Loading config file {self.config_path}')
-        
         self.data_params = self.config['data']
         self.model_params = self.config['model']
         self.features = self.config['features']
@@ -77,7 +81,7 @@ class NexData:
                 self.data_params['train_folder'],
                 self.features[feature]['train_filename'])
             self.features[feature]['train_filepath'] = train_filepath
-            self.logger.info(f'{feature} train path: {train_filepath}')
+            self.logger.debug(f' {feature} train path: {train_filepath}')
 
             test_filepath = os.path.join(
                 nexus_folder,
@@ -85,24 +89,25 @@ class NexData:
                 self.data_params['test_folder'],
                 self.features[feature]['test_filename'])
             self.features[feature]['test_filepath'] = test_filepath
-            self.logger.info(f'{feature} test path: {test_filepath}')
+            self.logger.debug(f' {feature} test path: {test_filepath}')
 
         # Set seeds for reproducibility
         if 'default_seed' in self.data_params:
             set_random_seeds(self.data_params['default_seed'])
-            self.logger.info(f'Random seed: {self.data_params["default_seed"]}')
+            self.logger.debug(f' Rnd seed: {self.data_params["default_seed"]}')
         else:
             self.logger.warning("No default seed found in data parameters")
 
         # Define the device
         try:
             self.device = torch.device(self.model_params['device'])
-            self.logger.info(f'Default device: {self.model_params["device"]}')
+            self.logger.debug(f' Default device: {self.model_params["device"]}')
         except Exception as e:
-            self.logger.error(f"An error occurred when setting device: {e}")
+            self.logger.error(f" An error occurred when setting device: {e}")
             raise
 
         # Define paths
+        self.logger.info(' Defining paths...')
         self.raw_dir = os.path.join(nexus_folder, self.data_params['raw_path'])
         self.processed_dir = os.path.join(nexus_folder,
                                         self.data_params['processed_path'])
@@ -110,13 +115,12 @@ class NexData:
                                         self.data_params['intermediate_path'])
         self.forecasted_dir = os.path.join(nexus_folder,
                                         self.data_params['forecasted_path'])
-        self.logger.info('Defining paths...')
+        self.logger.debug(' Paths are definied.')
 
         self.train_folder_path = os.path.join(self.raw_dir,
                                             self.data_params['train_folder'])
         self.test_folder_path = os.path.join(self.raw_dir,
                                             self.data_params['test_folder'])
-
 
 def process_dataframe(df_source,
                         start_date,
@@ -133,10 +137,14 @@ def process_dataframe(df_source,
     df_source (pd.DataFrame): Source dataframe.
     start_date (str or pd.Timestamp): Start date for the date range.
     end_date (str or pd.Timestamp): End date for the date range.
-    freq (str): Frequency for the new date range. Default is '1h'.
-    interp_method (str, optional): Interpolation method. Default is None.
-    datetime_col (str): Name of the datetime column. Default is 'datetime'.
-    round_freq (str): Frequency to round the datetime values. Default is '5min'.
+    freq (str): Frequency for the new date range.
+        Default is '1h'.
+    interp_method (str, optional): Interpolation method.
+        Default is None.
+    datetime_col (str): Name of the datetime column.
+        Default is 'datetime'.
+    round_freq (str): Frequency to round the datetime values.
+        Default is '5min'.
 
     Returns:
     pd.DataFrame: Processed dataframe with interpolated values.
@@ -154,7 +162,7 @@ def process_dataframe(df_source,
         'quadratic', 'cubic', 'barycentric', 'krogh', 'polynomial', 'spline',
         'piecewise_polynomial', 'pchip', 'akima', 'cubicspline'
     ]:
-        intrp_msg = 'interp_method must be a valid interpolation method or None'
+        intrp_msg = 'interp_method must be a valid interp. method or None'
         raise ValueError(intrp_msg)
     if not isinstance(datetime_col, str):
         raise ValueError("datetime_col must be a string")
@@ -176,7 +184,8 @@ def process_dataframe(df_source,
     df_original[datetime_col] = df_original[datetime_col].dt.round(round_freq)
 
     # Merge original and processed dataframes to fill gaps in datetime
-    merged_df = pd.merge(df_processed, df_original, how='left', on=datetime_col)
+    merged_df = pd.merge(df_processed, df_original,
+                        how='left', on=datetime_col)
 
     # Interpolate missing values if interpolation method is provided
     if interp_method:
@@ -207,7 +216,8 @@ def generate_indices(df, context_len, forecast_len, shift, mode="sliding"):
     context_len (int): Length of the context window.
     forecast_len (int): Length of the forecast window.
     shift (int): Shift step to slide the window.
-    mode (str): Mode for generating indices, either "sliding" or "fixed".
+    mode (str): Mode for generating indices,
+        either "sliding" or "fixed".
 
     Returns:
     list: Indices for context windows.
@@ -259,7 +269,8 @@ def load_yaml_config(file_path):
     Load configuration parameters from a YAML file.
 
     Parameters:
-    file_path (str): Path to the YAML file containing configuration parameters.
+    file_path (str): Path to the YAML file containing
+        configuration parameters.
 
     Returns:
     dict: A dictionary containing the configuration parameters.
@@ -338,7 +349,8 @@ def create_sequences(series, context_window_len, forecast_len):
     X, y = [], []
     for i in range(len(series) - context_window_len - forecast_len + 1):
         X.append(series[i:(i + context_window_len)])
-        y.append(series[(i + context_window_len):(i + context_window_len + forecast_len)])
+        y.append(series[(i + context_window_len):\
+            (i + context_window_len + forecast_len)])
     return np.array(X), np.array(y)
 '''
     
@@ -375,7 +387,8 @@ def transform_data(config_path,
     Transform data using configuration parameters from a YAML file.
 
     Parameters:
-    config_path (str): Path to the YAML file containing configuration parameters.
+    config_path (str): Path to the YAML file containing
+        configuration parameters.
 
     Returns:
     tuple: Containing numpy arrays of train and test data.

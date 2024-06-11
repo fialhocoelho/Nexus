@@ -13,6 +13,42 @@ from nixtla import NixtlaClient
 #from tqdm import tqdm
 import pickle
 import yaml
+import argparse
+import logging
+
+def parse_args():
+    """
+    Parse command-line arguments.
+    
+    Returns:
+        argparse.Namespace: Parsed command-line arguments.
+    """
+    parser = argparse.ArgumentParser(description='NexData Loader')
+    parser.add_argument('-v', '--verbose', action='count',
+                        default=0, help='Increase verbosity level')
+    return parser.parse_args()
+
+def get_log_level(verbosity):
+    """
+    Get logging level based on verbosity.
+
+    Args:
+        verbosity (int): Verbosity level.
+
+    Returns:
+        int: Corresponding logging level.
+    """
+    if not isinstance(verbosity, int):
+        raise ValueError("verbosity must be an integer")
+
+    if verbosity == 0:
+        return logging.WARNING
+    elif verbosity == 1:
+        return logging.INFO
+    elif verbosity >= 2:
+        return logging.DEBUG
+    else:
+        raise ValueError("verbosity must be a non-negative integer")
 
 # Function to calculate the Index of Agreement (IoA)
 def calculate_ioa(y_true, y_pred):
