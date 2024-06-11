@@ -87,3 +87,5 @@ target/
 
 # Mypy cache
 .mypy_cache/
+src/data/nixtla_api.key
+src/models/nixtla_api.key

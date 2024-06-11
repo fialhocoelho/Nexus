@@ -1,19 +1,62 @@
 data:
   processed_path: "data/processed/"
+  intermediate_path: "data/interim/"
+  raw_path: "data/raw/"
+  forecasted_path: "data/forecasted/"
+  train_folder: "santos_dataset/train/"
+  test_folder: "santos_dataset/test/"
+  train_start_date: "2021-01-01 00:00:00"
+  train_end_date: "2021-12-31 23:55:00"
+  test_start_date: "2022-01-01 00:00:00"
+  test_end_date: "2022-12-31 23:55:00"
   processed_train_df: "train_df_praticagem.csv"
   processed_test_df: "test_df_praticagem.csv"
-  intermediate_path: "data/interim/" 
+  target_freq: "1h"
+  interp_method: "linear"
+  datetime_col: "datetime"
+  round_freq: "5min"
   timegpt_fcst_file: "forecast_cache_fcst_y_validated_20240513_212354.pkl"
-  chronos_fcst_file: "chronos_forecast_cache_20240518_160948.pkl"
+  timegpt_cache_prefix: "timegpt_forecast_cache"
+  chronos_fcst_file: "chronos_forecast_cache_20240520_000009.pkl"
+  chronos_cache_prefix: "chronos_forecast_cache"
   crop_target_datetime: "2021-01-01 00:00:00"
   default_seed: 42
+features:
+  waves_palmas:
+    name: "waves_palmas"
+    list_features: ["hs","tp","ws"]
+    train_filename: "waves_palmas.parquet"
+    test_filename: "waves_palmas.parquet"
+    freq: "20min"
+    train_start_date: "2021-01-01 00:00:00"
+    train_end_date: "2021-12-31 23:55:00"
+    test_start_date: "2022-01-01 00:00:00"
+    test_end_date: "2022-12-31 23:55:00"
+  current_praticagem:
+    name: "current_praticagem"
+    list_features: ["cross_shore_current"]
+    train_filename: "current_praticagem.parquet"
+    test_filename: "current_praticagem.parquet"
+    freq: "5min"
+    train_start_date: "2021-01-01 00:00:00"
+    train_end_date: "2021-12-31 23:55:00"
+    test_start_date: "2022-01-01 00:00:00"
+    test_end_date: "2022-12-31 23:55:00"
 model:
   context_window_len: 168
-  forecast_len: 24
+  forecast_len: 48
+  shift: 48
   batch_size: 32
+  windowing_mode: "fixed"
   epochs: 500
   lr: 0.001
   beta: 0.5
   input_size: 1
   hidden_size: 64
   train_shuffle: true
+  timegpt_finetune_steps: 100
+  nixtla_api_key_path: "nixtla_api.key"
+  chronos_finetune_steps: 0
+  attempts_after_failure: 30
+  device: "cuda"
+  chronos_t5_model: "amazon/chronos-t5-large"
