@@ -115,12 +115,15 @@ class NexData:
                                         self.data_params['intermediate_path'])
         self.forecasted_dir = os.path.join(nexus_folder,
                                         self.data_params['forecasted_path'])
-        self.logger.debug(' Paths are definied.')
-
         self.train_folder_path = os.path.join(self.raw_dir,
                                             self.data_params['train_folder'])
         self.test_folder_path = os.path.join(self.raw_dir,
                                             self.data_params['test_folder'])
+        self.nixtla_api_key_file = os.path.join(nexus_folder,
+            self.model_params['nixtla_api_key_file'])
+
+        self.logger.debug(' Paths are definied.')
+
 
 def process_dataframe(df_source,
                         start_date,
@@ -243,7 +246,7 @@ def generate_indices(df, context_len, forecast_len, shift, mode="sliding"):
     y_index = []
 
     # Loop to generate indices for each window
-    for i in tqdm(range(range_size)):
+    for i in range(range_size):
         X_start = shift * i  # Start index for the context window
         X_end = X_start + context_len  # End index for the context window
         y_start = X_end  # Start index for the forecast window
