@@ -14,6 +14,7 @@ data:
   target_freq: "1h"
   interp_method: "linear"
   datetime_col: "datetime"
+  datetime_col_timegpt: "timestamp"
   round_freq: "5min"
   timegpt_fcst_file: "forecast_cache_fcst_y_validated_20240513_212354.pkl"
   timegpt_cache_prefix: "timegpt_forecast_cache"
@@ -22,22 +23,74 @@ data:
   crop_target_datetime: "2021-01-01 00:00:00"
   default_seed: 42
 features:
-  waves_palmas:
-    name: "waves_palmas"
-    list_features: ["hs","tp","ws"]
-    train_filename: "waves_palmas.parquet"
-    test_filename: "waves_palmas.parquet"
-    freq: "20min"
-    train_start_date: "2021-01-01 00:00:00"
-    train_end_date: "2021-12-31 23:55:00"
-    test_start_date: "2022-01-01 00:00:00"
-    test_end_date: "2022-12-31 23:55:00"
   current_praticagem:
     name: "current_praticagem"
     list_features: ["cross_shore_current"]
     train_filename: "current_praticagem.parquet"
     test_filename: "current_praticagem.parquet"
     freq: "5min"
+    exog: false
+    target_feature: true
+    train_start_date: "2021-01-01 00:00:00"
+    train_end_date: "2021-12-31 23:55:00"
+    test_start_date: "2022-01-01 00:00:00"
+    test_end_date: "2022-12-31 23:55:00"
+  ssh_praticagem:
+    name: "ssh_praticagem"
+    list_features: ["ssh"]
+    train_filename: "ssh_praticagem.parquet"
+    test_filename: "ssh_praticagem.parquet"
+    freq: "5min"
+    exog: false
+    target_feature: false 
+    train_start_date: "2021-01-01 00:00:00"
+    train_end_date: "2021-12-31 23:55:00"
+    test_start_date: "2022-01-01 00:00:00"
+    test_end_date: "2022-12-31 23:55:00"
+  wind_praticagem:
+    name: "wind_praticagem"
+    list_features: ["vx", "vy"]
+    train_filename: "wind_praticagem.parquet"
+    test_filename: "wind_praticagem.parquet"
+    freq: "5min"
+    exog: false
+    target_feature: false
+    train_start_date: "2021-01-01 00:00:00"
+    train_end_date: "2021-12-31 23:55:00"
+    test_start_date: "2022-01-01 00:00:00"
+    test_end_date: "2022-12-31 23:55:00"
+  waves_palmas:
+    name: "waves_palmas"
+    list_features: ["hs","tp","ws"]
+    train_filename: "waves_palmas.parquet"
+    test_filename: "waves_palmas.parquet"
+    freq: "20min"
+    exog: false
+    target_feature: true
+    train_start_date: "2021-01-01 00:00:00"
+    train_end_date: "2021-12-31 23:55:00"
+    test_start_date: "2022-01-01 00:00:00"
+    test_end_date: "2022-12-31 23:55:00"
+  sofs_praticagem:
+    name: "sofs_praticagem"
+    list_features: ["cross_shore_current", "ssh"]
+    train_filename: "sofs_praticagem.parquet"
+    test_filename: "sofs_praticagem.parquet"
+    freq: "20min"
+    exog: true
+    target_feature: false
+    train_start_date: "2021-01-01 00:00:00"
+    train_end_date: "2021-12-31 23:55:00"
+    test_start_date: "2022-01-01 00:00:00"
+    test_end_date: "2022-12-31 23:55:00"
+  astronomical_tide:
+    name: "astronomical_tide"
+    list_features: ["astronomical_tide"]
+    train_filename: "astronomical_tide.parquet"
+    test_filename: "astronomical_tide.parquet"
+    freq: "5min"
+    exog: true
+    target_feature: false
     train_start_date: "2021-01-01 00:00:00"
     train_end_date: "2021-12-31 23:55:00"
     test_start_date: "2022-01-01 00:00:00"
@@ -45,9 +98,9 @@ features:
 model:
   context_window_len: 168
   forecast_len: 48
-  shift: 48
+  shift: 48 #Actually, shift NEEDS TO BE the same value of forecast_len
   batch_size: 32
-  windowing_mode: "fixed"
+  windowing_mode: "fixed" #We need to test other windowing methods 
   epochs: 500
   lr: 0.001
   beta: 0.5
@@ -60,3 +113,5 @@ model:
   attempts_after_failure: 30
   device: "cuda"
   chronos_t5_model: "amazon/chronos-t5-large"
+  nixtla_api_key_file: "config/nixtla_api.key"
+  timegpt_model: 'timegpt-1-long-horizon'
