@@ -96,6 +96,7 @@ features:
     test_start_date: "2022-01-01 00:00:00"
     test_end_date: "2022-12-31 23:55:00"
 model:
+  normalize: true
   context_window_len: 168
   forecast_len: 48
   shift: 48 #Actually, shift NEEDS TO BE the same value of forecast_len
@@ -111,6 +112,7 @@ model:
   nixtla_api_key_path: "nixtla_api.key"
   chronos_finetune_steps: 0
   attempts_after_failure: 30
+  retry_interval: 5 #seconds
   device: "cuda"
   chronos_t5_model: "amazon/chronos-t5-large"
   nixtla_api_key_file: "config/nixtla_api.key"
